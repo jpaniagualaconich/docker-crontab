@@ -30,7 +30,9 @@ fi
 
 normalize_config() {
     JSON_CONFIG={}
-    if [ -f "${HOME_DIR}/config.json" ]; then
+    if [ -n "${CRONTAB_CONFIG_JSON_BASE64}" ]; then
+        JSON_CONFIG="$(echo "${CRONTAB_CONFIG_JSON_BASE64}" | base64 -d)"
+    elif [ -f "${HOME_DIR}/config.json" ]; then
         JSON_CONFIG="$(cat "${HOME_DIR}"/config.json)"
     elif [ -f "${HOME_DIR}/config.toml" ]; then
         JSON_CONFIG="$(rq -t <<< "$(cat "${HOME_DIR}"/config.toml)")"
