@@ -30,8 +30,10 @@ fi
 
 normalize_config() {
     JSON_CONFIG={}
-    if [ -n "${CRONTAB_CONFIG_JSON_BASE64}" ]; then
-        JSON_CONFIG="$(echo "${CRONTAB_CONFIG_JSON_BASE64}" | base64 -d)"
+    if [ -n "${CRONTAB_CONFIG_JSON}" ]; then
+        JSON_CONFIG=${CRONTAB_CONFIG_JSON}
+    elif [ -n "${CRONTAB_CONFIG_JSON_BASE64}" ]; then
+        JSON_CONFIG="$(echo -n "${CRONTAB_CONFIG_JSON_BASE64}" | base64 -d)"
     elif [ -f "${HOME_DIR}/config.json" ]; then
         JSON_CONFIG="$(cat "${HOME_DIR}"/config.json)"
     elif [ -f "${HOME_DIR}/config.toml" ]; then
@@ -42,7 +44,8 @@ normalize_config() {
         JSON_CONFIG="$(rq -y <<< "$(cat "${HOME_DIR}"/config.yaml)")"
     fi
 
-    jq -S -r '."~~shared-settings" as $shared | del(."~~shared-settings") | to_entries | map_values(.value + { name: .key } + $shared)' <<< "${JSON_CONFIG}" > "${HOME_DIR}"/config.working.json
+    jq 'map(.)' <<< "${JSON_CONFIG}" > "${HOME_DIR}"/config.working.json
+    # jq -S -r '."~~shared-settings" as $shared | del(."~~shared-settings") | to_entries | map_values(.value + { name: .key } + $shared)' <<< "${JSON_CONFIG}" > "${HOME_DIR}"/config.working.json
 }
 
 ensure_docker_socket_accessible() {
